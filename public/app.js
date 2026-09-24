@@ -2,6 +2,12 @@ import { siteConfig } from "./config.js";
 
 const year = document.querySelector("#year");
 if (year) year.textContent = new Date().getFullYear();
+const editionDate = document.querySelector("#edition-date");
+if (editionDate) {
+  editionDate.textContent = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long", day: "2-digit", month: "long", year: "numeric"
+  }).format(new Date());
+}
 
 const menuButton = document.querySelector(".menu-button");
 const mainNav = document.querySelector("#main-nav");
