@@ -85,8 +85,12 @@
         <section class="latest wrap" id="cidade">
           <div class="section-heading">
             <div><p class="kicker">A CIDADE ACONTECE AQUI</p><h2>Últimas da Barra</h2></div>
-            <div class="hub-status" data-hub-state><span class="status-dot"></span><span data-hub-label>Edição de estreia</span></div>
+            <div class="latest-tools">
+              <div class="hub-status" data-hub-state><span class="status-dot"></span><span data-hub-label>Preparando edição</span></div>
+              <button type="button" class="refresh-button" id="hub-refresh">Atualizar</button>
+            </div>
           </div>
+          <div class="category-filter" id="category-filter" role="tablist" aria-label="Filtrar notícias"></div>
           <div class="news-grid" id="news-grid">
             <article class="news-card featured-card">
               <p class="eyebrow">JORNAL DA BARRA</p><h3>Um jornal local para olhar de perto</h3>
@@ -105,6 +109,14 @@
             <p>Nenhuma matéria do Hub apareceu ainda.</p>
             <button type="button" id="hub-retry" class="outline-button">Tentar novamente</button>
           </div>
+        </section>
+
+        <section class="hub-sections wrap" id="editorias">
+          <div class="section-heading editorial-heading">
+            <div><p class="kicker">LEITURA POR EDITORIA</p><h2>O bairro em camadas</h2></div>
+            <p class="section-heading-note">Atualizado a partir das publicações do Correio da Manhã.</p>
+          </div>
+          <div id="category-sections" class="category-sections"></div>
         </section>
 
         <section class="signal-band wrap" id="negocios">
@@ -128,7 +140,7 @@
 
       <footer class="footer" id="sobre">
         <div class="wrap footer-top">
-          <div><a class="wordmark footer-mark" href="/" aria-label="Jornal da Barra, início"><span>JORNAL</span><strong>da Barra</strong></a><p>Notícias locais com contexto, serviço e personalidade.</p></div>
+          <div><a class="wordmark footer-mark" href="/" aria-label="Jornal da Barra, início"><span>JORNAL</span><strong>da Barra</strong></a><p>Notícias locais com contexto, serviço e personalidade.</p><small class="footer-source">Conteúdo atualizado pelo Correio Content Hub.</small></div>
           <div class="footer-links"><a href="#barra">Barra</a><a href="#cidade">Cidade</a><a href="#cultura">Cultura</a><a href="mailto:redacao@jornaldabarra.com.br">Contato</a></div>
         </div>
         <div class="wrap footer-bottom"><span>© <span id="year"></span> Jornal da Barra</span><span>Imagem de abertura: erikogan / Wikimedia Commons · CC BY-SA 2.0</span></div>
