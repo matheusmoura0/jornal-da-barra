@@ -1,12 +1,12 @@
 # Jornal da Barra
 
-Site estático editorial para `jornaldabarra.com.br`, preparado para receber matérias do Correio Content Hub.
+Site editorial estático para `jornaldabarra.com.br`, integrado ao Correio Content Hub.
 
 ## Desenvolvimento
 
 ```bash
 npm run build
-python3 -m http.server 4173 --directory dist
+npx wrangler pages dev dist
 ```
 
 ## Cloudflare Pages
@@ -15,20 +15,9 @@ python3 -m http.server 4173 --directory dist
 - Build command: `npm run build`
 - Build output directory: `dist`
 - Branch de produção: `main`
+- Deploy manual: execute `npx wrangler pages deploy dist --project-name jornal-da-barra --branch main` na raiz do repositório.
 
-## Ativar o Content Hub
-
-Edite `public/config.js` e troque `hubEnabled` para `true` depois que o domínio for cadastrado no Hub:
-
-```js
-export const siteConfig = {
-  hubEnabled: true,
-  domain: "jornaldabarra.com.br",
-  hubOrigin: "https://hub.cm.com.br"
-};
-```
-
-Quando ativado, o site consulta `/api/v1/sites/by-domain/articles` sem cache e substitui o bloco “Últimas da Barra” pelas matérias disponíveis. Se a API estiver indisponível, a página mantém o conteúdo editorial de fallback.
+A rota `/api/articles` é uma Pages Function que consulta o Hub no servidor, evitando dependência de CORS no navegador. A resposta tem cache de edge de 60 segundos, usa o último resultado por até 24 horas quando o Hub falha e o navegador mantém uma cópia local por até 7 dias. Sem conteúdo do Hub, a página mantém a edição editorial de fallback.
 
 ## Crédito da imagem
 
