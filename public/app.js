@@ -1,4 +1,5 @@
 import { siteConfig } from "./config.js";
+import { readCachedHubArticles, requestHubArticles, saveHubArticles } from "./hub-client.js";
 
 const year = document.querySelector("#year");
 if (year) year.textContent = new Date().getFullYear();
@@ -188,39 +189,67 @@ const updateHero = () => {
   });
 };
 
-async function loadHubNews({ quiet = false } = {}) {
-  if (!siteConfig.hubEnabled || !grid) return;
+function restoreHubCache() {
+  const cached = readCachedHubArticles(siteConfig.domain);
+  if (!cached?.articles.length) return;
+  hubArticles = cached.articles;
+  activeCategory = "all";
+  renderFilters();
+  renderGrid();
+  renderCategorySections();
+  updateHero();
+  updateStatus("Última edição salva · atualizando");
+}
+
+let hubRequest = null;
+
+function loadHubNews({ quiet = false } = {}) {
+  if (!siteConfig.hubEnabled || !grid) return Promise.resolve();
+  if (hubRequest) return hubRequest;
   if (!quiet) updateStatus("Buscando atualização", true);
-  const url = new URL(siteConfig.hubEndpoint, siteConfig.hubOrigin);
-  url.searchParams.set("domain", siteConfig.domain);
-  url.searchParams.set("refresh", String(Date.now()));
-  try {
-    const response = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`Hub respondeu ${response.status}`);
-    const articles = articleList(await response.json()).filter(Boolean);
-    hubArticles = articles;
-    if (!articles.length) {
-      updateStatus("Hub conectado, aguardando matérias");
+
+  hubRequest = (async () => {
+    try {
+      const result = await requestHubArticles({ retries: 1, timeoutMs: 8000 });
+      const articles = result.articles;
+      if (!articles.length) {
+        updateStatus(hubArticles.length
+          ? "Sem matérias novas · mantendo última edição"
+          : "Hub conectado, aguardando matérias");
+        return;
+      }
+
+      hubArticles = articles;
+      activeCategory = "all";
+      if (result.source !== "stale-cache") saveHubArticles(siteConfig.domain, articles);
+      renderFilters();
       renderGrid();
       renderCategorySections();
-      return;
+      updateHero();
+
+      const status = result.source === "stale-cache"
+        ? "Último cache · Hub instável"
+        : result.source === "edge-cache"
+          ? `Atualizado recentemente pelo Hub · ${articles.length} matérias`
+          : `Atualizado pelo Hub · ${articles.length} matérias`;
+      updateStatus(status);
+    } catch (error) {
+      console.warn("Não foi possível atualizar pelo CM Hub:", error);
+      updateStatus(hubArticles.length
+        ? "Última edição salva · Hub indisponível"
+        : "Edição local · Hub indisponível");
+    } finally {
+      hubStatus?.classList.remove("is-loading");
+      hubRequest = null;
     }
-    activeCategory = "all";
-    renderFilters();
-    renderGrid();
-    renderCategorySections();
-    updateHero();
-    updateStatus(`Atualizado pelo Hub · ${articles.length} matérias`);
-  } catch (error) {
-    console.warn("Não foi possível atualizar pelo Content Hub:", error);
-    updateStatus("Edição local · Hub indisponível");
-  } finally {
-    hubStatus?.classList.remove("is-loading");
-  }
+  })();
+
+  return hubRequest;
 }
 
 retryButton?.addEventListener("click", () => loadHubNews());
 refreshButton?.addEventListener("click", () => loadHubNews());
+restoreHubCache();
 loadHubNews();
 refreshTimer = window.setInterval(() => loadHubNews({ quiet: true }), siteConfig.refreshIntervalMs || 300000);
 window.addEventListener("focus", () => loadHubNews({ quiet: true }));
